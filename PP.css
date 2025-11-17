@@ -456,12 +456,9 @@ background-repeat: no-repeat;
   right: -480px; 
   width: 374.07px;
   height: 931px;;
-  align-items: center;
-  justify-content: flex-start;
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: space-between;
   padding-top: 60px;
   opacity: 0;
@@ -534,17 +531,9 @@ background: rgba(255, 225, 255, 0.95)
   right: 0;
   opacity: 1;
   pointer-events: auto;
-  transform: translateX(0) scale(1);
 }
 
-.settings:hover::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 480px; 
-  height: 100%;
-}
+
 
 
 .logout-btn {
