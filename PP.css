@@ -23,12 +23,12 @@ align-items: center;
 
 body {
       margin: 0;
-      overflow: hidden;
+      overflow: auto;
     }
 
     .scroll-pets {
       width: 100%;
-      overflow: hidden;
+      overflow: auto;
       white-space: nowrap;
     }
 
@@ -91,10 +91,15 @@ p {
     background-size: cover;                 
     background-repeat: no-repeat;   
     background-attachment: fixed;
-    background-position: center center;    
-    min-height: 140vh;                           
+    background-position: center center;                             
     margin: 0;                   
     color: white; 
+    top: -16%;
+  }
+
+  body.welcome {
+    position: fixed;
+    top: 9%;
   }
 
   .speech-center {

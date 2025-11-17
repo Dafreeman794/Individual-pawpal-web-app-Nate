@@ -409,3 +409,6 @@ const track = document.getElementById('petTrack');
       const clone = item.cloneNode(true);
       track.appendChild(clone);
     });
+
+    document.body.style.overflow = "auto";
+document.documentElement.style.overflow = "auto";
