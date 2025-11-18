@@ -454,7 +454,7 @@ background-repeat: no-repeat;
   position: fixed;
   top: 0;
   right: -480px; 
-  width: 374.07px;
+  width: 474.07px;
   height: 931px;;
   z-index: 9999;
   display: flex;
@@ -485,7 +485,7 @@ background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 76px;
+  gap: 80px;
   width: 100%;
   padding-top: 80px;
 }
@@ -537,30 +537,24 @@ background: rgba(255, 225, 255, 0.95)
 
 
 .logout-btn {
+  display: grid;
   background-color: red;
   color: white;
   font-size: 24px;
-  border-radius: 12px;
-  width: 100%;
   text-align: center;
   text-decoration: none;
   font-family: "Pixelify Sans", sans-serif;
   transition: transform 0.2s ease, background 0.2s ease;
-}
-
-
-.logout-btn {
-  background-color: red;
-  color: white;
   border: none;
   border-radius: 10px;
   padding: 20px;
-  width: 100%;
-  font-size: 22px;
+  width: 379px;
+  height: 152px;
   cursor: pointer;
   margin-top: 30px;
-  font-family: "Pixelify Sans", sans-serif;
 }
+
+
 /* settings widget end */
 
 
@@ -1356,7 +1350,6 @@ justify-content:center;
 }
 
   .overlay {
-    width: 100%;
     right: -100%;
   }
 
