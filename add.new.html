@@ -13,15 +13,196 @@
 
   <header>
     <nav class="navbar">
-        <ul class="list"> 
-            <li class="newpet"><a href="add.new.html"><img src="Images/image 6.png"></a></li>
-            <li class="activity"><a href="activities.html"><img src="Images/ball.png"></a></li>
-            <li class="special"><a href="special.needs.html"><img src="images/pill.png"></a></li>
-            <li class="stats"><a href="stats.html"><img src="images/stats.png"></a></li>
-            <li class="settings"><a href="settings.html"><img src="images/Gear.png"></a></li>
-         </ul>
+      <ul class="list">
+        <li class="newpet"><a href="add.new.html"><img src="Images/image 6.png"></a></li>
+        
+        <li class="activity">
+          <img src="Images/ball.png" class="activity-icon">
+        
+          <div class="activity-overlay">
+            <div class="activity-container">
+              <h2 class="activity-title">Today's Activities</h2>
+        
+              <section class="feeding-parent">
+                <h3>Feeding</h3>
+                <section class="feeding-content">
+                  <img src="Images/blue-bowl-pet-food-pixel-260nw-1963476142-removebg-preview 3 (1).png">
+                  <p>10:00 A.M.</p>
+                  <img src="Images/blue-bowl-pet-food-pixel-260nw-1963476142-removebg-preview 3 (1).png">
+                  <p>1:00 P.M.</p>
+                  <img src="Images/blue-bowl-pet-food-pixel-260nw-1963476142-removebg-preview 3 (1).png">
+                  <p>6:00 P.M.</p>
+                </section>
+              </section>
+        
+        
+              <section class="exercise-parent">
+                <h3>Exercise</h3>
+                <section class="exercise-content">
+                  <p>2 Miles</p>
+                  <p>10:00 P.M.</p>
+                  <p>2 Hours</p>
+                  <p>5:00 P.M.</p>
+                </section>
+              </section>
+        
+        
+              <section class="medication-parent">
+                <h3>Medication</h3>
+                <section class="medication-content">
+                  <section class="medication-times">
+                    <img class="pill-img" src="Images/pill.png">
+                    <p>10:00 A.M.</p>
+                  </section>
+                  <section class="medication-times">
+                    <img class="pill-img" src="Images/pill.png">
+                    <p>1:00 P.M.</p>
+                  </section>
+                  <section class="medication-times">
+                    <img class="pill-img" src="Images/pill.png">
+                    <p>6:00 P.M.</p>
+                  </section>
+                </section>
+              </section>
+        
+        
+              <section class="waste-parent">
+                <h3>Waste Disposal</h3>
+                <section class="waste-content">
+                  <section class="img-time-column">
+                    <p>10:30 A.M.</p>
+                    <img class="waste-img" src="Images/a31a2d5d0dfb5c98ac6abcefba126259d3094311.png">
+                  </section>
+                  <section class="img-time-column">
+                    <p>1:30 P.M.</p>
+                    <img class="waste-img" src="Images/a31a2d5d0dfb5c98ac6abcefba126259d3094311.png">
+                  </section>
+                  <section class="img-time-column">
+                    <p>6:30 P.M.</p>
+                    <img class="waste-img" src="Images/a31a2d5d0dfb5c98ac6abcefba126259d3094311.png">
+                  </section>
+                </section>
+              </section>
+        
+              <div class="activity-list" id="activityList"></div>
+              
+              <button id="addActivityBtn" class="add-activity-btn">+ Add Activity</button>
+
+                <form id="addActivityForm" style="display:none; flex-direction: column;">
+                  <label>Activity Name</label>
+                    <input type="text" id="activityName" placeholder="Walk" required>
+
+                  <label>Time</label>
+                    <input type="time" id="activityTime" required>
+
+                  <label>Date</label>
+                     <input type="date" id="activityDate" required>
+
+                  <label>Image (optional)</label>
+                      <input type="text" id="activityImage" placeholder="images/default.png">
+
+                  <button type="submit" class="save-activity">Save</button>
+                </form>
+
+
+            </div>
+          </div>
+        </li>
+
+        <li class="special">
+          <img src="images/pill.png" class="special-icon" alt="Special Needs Icon">
+      <div class="special-overlay">
+      <div class="special-container">
+    <h2 class="special-title">Becuase your pet is a german shepard, it especially needs...</h2>
+        
+  <div class="special-content">
+        <div class="special-card">
+    </div>
+        
+    <div class="special-card">
+        </div>
+
+    <h3>Events</h3>
+<div class="event-list" id="eventList">
+  <div class="event-card">
+    <img src="images/Vet.png">
+    <p>Dr. Ewbank<br>checkup</p>
+    <p>4 PM,<br>October 4th</p>
+  </div>
+</div>
+
+<button id="addEventBtn" class="add-event-btn">+ Add Event</button>
+
+
+<form id="addEventForm" class="add-event-form" style="display:none;">
+  <label>Event Name</label>
+  <input type="text" id="eventName" placeholder="Vet Visit" required>
+
+  <label>Time</label>
+  <input type="time" id="eventTime" required>
+
+  <label>Date</label>
+  <input type="date" id="eventDate" required>
+
+  <label>Image (optional)</label>
+  <input type="text" id="eventImage" placeholder="images/default.png">
+
+  <button type="submit" class="save-event">Save</button>
+</form>
+        
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+
+
+    <li class="stats"><img src="images/stats.png" class="stats-icon"></a>
+      <div class="stats-overlay">
+        <h3 style="text-align:center; margin:0;"> Pet Mileage </h3>
+        <div class="graph">
+          <div class="bar-container">
+            <div class="bar" style="height: 150px;">15</div>
+            <div class="label">Dog</div>
+          </div>
+          <div class="bar-container">
+            <div class="bar" style="height: 100px;">10</div>
+            <div class="label">Cat</div>
+          </div>
+          <div class="bar-container">
+            <div class="bar" style="height: 60px;">6</div>
+            <div class="label">Rabbit</div>
+          </div>
+          <div class="bar-container">
+            <div class="bar" style="height: 200px;">20</div>
+            <div class="label">Horse</div>
+          </div>
+        </div>
+      </div>
+    </li>
+
+
+      <li class="settings">
+      <img src="images/gear.png" class="gear-icon" alt="Settings">
+    </li>
+    <section class="overlay" id="settingsOverlay">
+  <img src="Images/Setting-image.png" alt="Settings Background" class="settings-bg">
+
+
+      <ul class="overlay-content">
+        <li><a href="account.html" class="overlay-item" id="account-overlay">Account</a></li>
+        <li><a href="settings.html" class="overlay-item" id="settings-overlay">Settings</a></li>
+        <li><a href="about.html" class="overlay-item" id="about-overlay">About</a></li>
+        <li><a href="feedback.html" class="overlay-item" id="support-overlay">Support <br>/ Feedback</a></li>
+        <li><a href="policy.html" class="overlay-item" id="policy-overlay">Privacy Policy</a></li>
+        <li><a href="faq.html" class="overlay-item" id="help-overlay">Help</a></li>
+        <li><option class="overlay-item" id="id-overlay">Turn off Notifications</option></li>
+        <li><a href="logout.html" class="logout-btn" id="logout-overlay">Log Out</a></li>
+      </ul>
+    </section>
+      </ul>
     </nav>
-</header>
+  </header>
 
   <main class="new-pet-page">
     <input type="text" placeholder="Pet name...">
