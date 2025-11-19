@@ -102,13 +102,13 @@ p {
     top: 9%;
   }
 
-  .speech-center {
+  .Pet-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
   }
   
-.speech {
+#speechText {
   display:flex;
   background-image: url(Images/bubbles-removebg-preview\ 1.png);
   background-repeat: no-repeat;
