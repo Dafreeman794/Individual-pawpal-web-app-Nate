@@ -106,19 +106,24 @@ p {
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 150px; 
   }
   
-#speechText {
-  display:flex;
-  background-image: url(Images/bubbles-removebg-preview\ 1.png);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size:contain;
-  padding: 125px;
-  font-size:x-large;
-}
-
-
+  #speechText {
+    display:flex;
+    background-image: url(Images/bubbles-removebg-preview\ 1.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size:contain;
+    padding: 125px;
+    font-size:x-large;
+  }
+  
+  #speechText:empty {
+    opacity: 0;          
+    background-image: none; 
+  }
+  
 
 .buttons {
   display: flex;
