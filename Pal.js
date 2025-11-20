@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initEventManager();
   initCodeInputs();
   showWelcomeMessage();
+  initNavbar(); 
 });
 
 
@@ -435,6 +436,85 @@ const track = document.getElementById('petTrack');
 
     document.body.style.overflow = "auto";
 document.documentElement.style.overflow = "auto";
+
+document.addEventListener("DOMContentLoaded", function () {
+  const mobile = window.matchMedia("(max-width: 768px)");
+
+  function handleNavBehavior() {
+    const isMobile = mobile.matches;
+
+    // Select navbar items
+    const activity = document.querySelector(".activity-icon");
+    const special = document.querySelector(".special-icon");
+    const stats = document.querySelector(".stats-icon");
+    const gear = document.querySelector(".gear-icon");
+
+    if (isMobile) {
+      // MOBILE MODE — make icons link to pages
+      activity.onclick = () => (window.location.href = "activities.html");
+      special.onclick = () => (window.location.href = "special.needs.html");
+      stats.onclick = () => (window.location.href = "stats.html");
+      gear.onclick = () => (window.location.href = "settings.html");
+
+      // Hide overlays on mobile
+      document.querySelectorAll(".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay")
+        .forEach(el => el.style.display = "none");
+    } else {
+      // DESKTOP MODE — overlays behave normally
+      activity.onclick = null;
+      special.onclick = null;
+      stats.onclick = null;
+      gear.onclick = null;
+
+      // You can restore hover/overlay behavior if you use JS toggles
+      document.querySelectorAll(".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay")
+        .forEach(el => el.style.display = "");
+    }
+  }
+
+  // Run on load and whenever screen resizes
+  handleNavBehavior();
+  mobile.addEventListener("change", handleNavBehavior);
+});
+
+function initNavbar() {
+  const mobile = window.matchMedia("(max-width: 768px)");
+
+  function handleNavBehavior() {
+    const isMobile = mobile.matches;
+
+    // Select navbar items
+    const activity = document.querySelector(".activity-icon");
+    const special = document.querySelector(".special-icon");
+    const stats = document.querySelector(".stats-icon");
+    const gear = document.querySelector(".gear-icon");
+
+    if (!activity || !special || !stats || !gear) return;
+
+    if (isMobile) {
+      // MOBILE MODE — redirect to pages
+      activity.onclick = () => (window.location.href = "activities.html");
+      special.onclick = () => (window.location.href = "special.needs.html");
+      stats.onclick = () => (window.location.href = "stats.html");
+      gear.onclick = () => (window.location.href = "settings.html");
+
+      document.querySelectorAll(".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay")
+        .forEach(el => el && (el.style.display = "none"));
+    } else {
+      // DESKTOP — dropdown overlays
+      activity.onclick = null;
+      special.onclick = null;
+      stats.onclick = null;
+      gear.onclick = null;
+
+      document.querySelectorAll(".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay")
+        .forEach(el => el && (el.style.display = ""));
+    }
+  }
+
+  handleNavBehavior();
+  mobile.addEventListener("change", handleNavBehavior);
+}
 
 
 

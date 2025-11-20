@@ -102,6 +102,10 @@ p {
     top: 9%;
   }
 
+  .error {
+    border: 2px solid red !important;
+  }
+  
   .Pet-wrapper {
     display: flex;
     justify-content: center;
