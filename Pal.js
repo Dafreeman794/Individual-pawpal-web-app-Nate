@@ -16,9 +16,9 @@ notificationsEnabled = notificationsEnabled === null ? true : notificationsEnabl
 function showNotification(message) {
   if (!notificationsEnabled) return;
 
-  const speech = document.getElementById("petSpeech");
-  const text = document.getElementById("speechText");
-  if (!speech || !text) return;
+  // const speech = document.getElementById("petSpeech");
+  // const text = document.getElementById("speechText");
+  // if (!speech || !text) return;
 
   text.textContent = message;
   speech.classList.add("show");
