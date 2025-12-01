@@ -184,7 +184,7 @@ function initEventManager() {
     const name = document.getElementById("eventName").value.trim();
     const time = document.getElementById("eventTime").value;
     const date = document.getElementById("eventDate").value;
-    const image = document.getElementById("eventImage").value || "images/default.png";
+    const image = document.getElementById("eventImage").value || "Images/default.png";
     if (!name || !time || !date) return alert("Please fill in all required fields.");
 
     savedEvents.push({ name, time, date, image });
@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = document.getElementById("activityName").value.trim();
     const time = document.getElementById("activityTime").value;
     const date = document.getElementById("activityDate").value;
-    const image = document.getElementById("activityImage").value || "images/default.png";
+    const image = document.getElementById("activityImage").value || "Images/default.png";
 
     if (!name || !time || !date) {
       alert("Please fill in all required fields.");
@@ -403,6 +403,64 @@ function initNavbar() {
   handleNavBehavior();
   mobile.addEventListener("change", handleNavBehavior);
 }
+
+
+document.querySelector(".make-pet-btn").addEventListener("click", function () {
+  const name = document.getElementById("petName").value.trim();
+  const type = document.getElementById("petType").value;
+
+  if (!name || !type) {
+    alert("Please enter a name and choose a pet.");
+    return;
+  }
+
+  // Load existing pets
+  let pets = JSON.parse(localStorage.getItem("pets")) || [];
+
+  // Create new pet object
+  const newPet = { name, type };
+
+  // Add to list
+  pets.push(newPet);
+
+  // Save list
+  localStorage.setItem("pets", JSON.stringify(pets));
+
+  // ALSO save the last selected pet index
+  localStorage.setItem("currentPetIndex", pets.length - 1);
+
+  // Redirect
+  window.location.href = "Home.html";
+});
+
+
+window.addEventListener("DOMContentLoaded", () => {
+  const pets = JSON.parse(localStorage.getItem("pets")) || [];
+  const index = localStorage.getItem("currentPetIndex");
+
+  // If no pets exist yet, do nothing
+  if (!pets.length) return;
+
+  // Load the selected pet
+  const pet = pets[index];
+
+  const petImages = {
+    dog: "dog.png",
+    cat: "cat.png",
+    bird: "parrot.png",
+    rabbit: "bunny.png",
+    capybara: "capybara.png"
+  };
+
+  // 2. update hero image using YOUR filenames
+  const petImg = document.querySelector(".pet");
+  petImg.src = `Images/${petImages[pet.type]}`;
+
+  // Update speech text
+  const speech = document.getElementById("speechText");
+  speech.textContent = `${pet.name} is happy to see you!`;
+});
+
 
 
 
