@@ -30,9 +30,9 @@ let notificationsEnabled = (() => {
 function showNotification(message) {
   if (!notificationsEnabled) return;
 
-   const speech = document.getElementById("petSpeech");
-   const text = document.getElementById("speechText");
-   if (!speech || !text) return;
+  // Prefer in-page speech bubble if present
+  const speech = document.getElementById("petSpeech");
+  const text = document.getElementById("speechText");
 
   if (speech && text) {
     text.textContent = message;
@@ -73,22 +73,8 @@ function initNotificationSettings() {
 
 /* ----------------------------- Welcome message ----------------------------- */
 function showWelcomeMessage() {
-  const speechEl = document.getElementById("speechText");
-
-  if (!speechEl) return; // Not on Home.html
-
-  // Show after page fully loads
-  setTimeout(() => {
-    speechEl.textContent = "Welcome back! I missed ya!";
-    speechEl.style.display = "flex";
-
-    // Remove after 4 seconds
-    setTimeout(() => {
-      speechEl.textContent = "";
-      speechEl.style.display = "none";
-    }, 4000);
-
-  }, 1200);
+  // Delay slightly so the page looks loaded before the bubble appears
+  setTimeout(() => showNotification("Welcome back! I sure missed ya."), 1500);
 }
 
 /* ----------------------------- Pet needs logic ----------------------------- */
@@ -457,3 +443,5 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+
