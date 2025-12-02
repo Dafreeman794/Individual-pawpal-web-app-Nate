@@ -226,6 +226,78 @@ function initCodeInputs() {
 }
 
 
+document.addEventListener("DOMContentLoaded", () => {
+  const addEventBtn = document.getElementById("addEventBtn");
+  const addEventForm = document.getElementById("addEventForm");
+  const eventList = document.getElementById("eventList");
+
+  // 🔹 Load saved events from localStorage
+  let savedEvents = JSON.parse(localStorage.getItem("events") || "[]");
+
+  function renderEvents() {
+    eventList.innerHTML = ""; // clear existing
+    savedEvents.forEach((event, index) => {
+      const card = document.createElement("div");
+      card.classList.add("event-card");
+      card.innerHTML = `
+        <img src="${event.image}" alt="Event Image">
+        <p>${event.name}</p>
+        <p>${event.time}<br>${event.date}</p>
+        <button class="delete-btn" data-index="${index}">✖</button>
+      `;
+      eventList.appendChild(card);
+    });
+
+    // Add delete button handlers
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const index = e.target.getAttribute("data-index");
+        deleteEvent(index);
+      });
+    });
+  }
+
+  function deleteEvent(index) {
+    savedEvents.splice(index, 1); // remove from array
+    localStorage.setItem("events", JSON.stringify(savedEvents));
+    renderEvents(); // re-render UI
+  }
+
+  // 🔹 Show/hide form
+  addEventBtn.addEventListener("click", () => {
+    addEventForm.style.display =
+      addEventForm.style.display === "none" ? "flex" : "none";
+  });
+
+  // 🔹 Handle add form submission
+  addEventForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("eventName").value.trim();
+    const time = document.getElementById("eventTime").value;
+    const date = document.getElementById("eventDate").value;
+    const image = document.getElementById("eventImage").value || "images/default.png";
+
+    if (!name || !time || !date) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    // Save event
+    const newEvent = { name, time, date, image };
+    savedEvents.push(newEvent);
+    localStorage.setItem("events", JSON.stringify(savedEvents));
+
+    // Reset form + re-render
+    addEventForm.reset();
+    addEventForm.style.display = "none";
+    renderEvents();
+  });
+
+  // Initial render
+  renderEvents();
+});
+
 // Wait until DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   // Select all the inputs in the code section
@@ -364,6 +436,46 @@ const track = document.getElementById('petTrack');
 
     document.body.style.overflow = "auto";
 document.documentElement.style.overflow = "auto";
+
+document.addEventListener("DOMContentLoaded", function () {
+  const mobile = window.matchMedia("(max-width: 768px)");
+
+  function handleNavBehavior() {
+    const isMobile = mobile.matches;
+
+    // Select navbar items
+    const activity = document.querySelector(".activity-icon");
+    const special = document.querySelector(".special-icon");
+    const stats = document.querySelector(".stats-icon");
+    const gear = document.querySelector(".gear-icon");
+
+    if (isMobile) {
+      // MOBILE MODE — make icons link to pages
+      activity.onclick = () => (window.location.href = "activities.html");
+      special.onclick = () => (window.location.href = "special.needs.html");
+      stats.onclick = () => (window.location.href = "stats.html");
+      gear.onclick = () => (window.location.href = "settings.html");
+
+      // Hide overlays on mobile
+      document.querySelectorAll(".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay")
+        .forEach(el => el.style.display = "none");
+    } else {
+      // DESKTOP MODE — overlays behave normally
+      activity.onclick = null;
+      special.onclick = null;
+      stats.onclick = null;
+      gear.onclick = null;
+
+      // You can restore hover/overlay behavior if you use JS toggles
+      document.querySelectorAll(".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay")
+        .forEach(el => el.style.display = "");
+    }
+  }
+
+  // Run on load and whenever screen resizes
+  handleNavBehavior();
+  mobile.addEventListener("change", handleNavBehavior);
+});
 
 function initNavbar() {
   const mobile = window.matchMedia("(max-width: 768px)");
