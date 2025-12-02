@@ -1,67 +1,97 @@
+/***************************************************************
+ * Wellnesti - Consolidated & Defensive Main JS
+ * Replaces fragmented duplicated DOMContentLoaded blocks
+ * - No text-to-speech
+ * - Graceful when elements are missing
+ * - Preserves events/activities/localStorage
+ ***************************************************************/
 
 document.addEventListener("DOMContentLoaded", () => {
-  initSpecialOverlays();
+  // Top-level init
   initNotificationSettings();
+  initSpecialOverlays();
   initRandomStatBars();
   initEventManager();
+  initActivityManager();
   initCodeInputs();
+  initPetTrack();
+  initNavbar();
   showWelcomeMessage();
-  initNavbar(); 
 });
 
-
-let notificationsEnabled = localStorage.getItem("notificationsEnabled");
-notificationsEnabled = notificationsEnabled === null ? true : notificationsEnabled === "true";
+/* ----------------------------- Notifications ----------------------------- */
+/* Single implementation (no TTS). Uses the bubble if present otherwise console.log. */
+let notificationsEnabled = (() => {
+  const stored = localStorage.getItem("notificationsEnabled");
+  if (stored === null) return true;
+  return stored === "true";
+})();
 
 function showNotification(message) {
   if (!notificationsEnabled) return;
 
-  // const speech = document.getElementById("petSpeech");
-  // const text = document.getElementById("speechText");
-  // if (!speech || !text) return;
+  // Prefer in-page speech bubble if present
+  const speech = document.getElementById("petSpeech");
+  const text = document.getElementById("speechText");
 
-  text.textContent = message;
-  speech.classList.add("show");
+  if (speech && text) {
+    text.textContent = message;
+    speech.classList.add("show");
 
-  // Prevent overlapping speech
-  if ("speechSynthesis" in window) {
-    speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(message);
-    utter.rate = 1.1;
-    utter.pitch = 1.2;
-    speechSynthesis.speak(utter);
+    // remove 'show' after 5s (keeps DOM space, use CSS to hide visually)
+    setTimeout(() => {
+      // only remove if the message hasn't changed
+      if (text.textContent === message) {
+        speech.classList.remove("show");
+        text.textContent = ""; // clear text so :empty CSS rules apply
+      }
+    }, 5000);
+    return;
   }
 
-  setTimeout(() => speech.classList.remove("show"), 5000);
+  // Fallback: log (non-intrusive)
+  console.log("Notification:", message);
 }
 
-// Initial message
-function showWelcomeMessage() {
-  setTimeout(() => showNotification("Welcome back! Your pet missed you."), 1500);
-}
-
-// Toggle notifications in Settings
+/* Notification settings toggle initialization */
 function initNotificationSettings() {
   const notificationsButton = document.getElementById("id-overlay");
+  if (!notificationsButton) return;
 
-  notificationsButton.textContent = notificationsEnabled
-    ? "Turn off Notifications"
-    : "Turn on Notifications";
+  // initialize text
+  notificationsButton.textContent = notificationsEnabled ? "Turn off Notifications" : "Turn on Notifications";
 
   notificationsButton.addEventListener("click", () => {
     notificationsEnabled = !notificationsEnabled;
     localStorage.setItem("notificationsEnabled", notificationsEnabled);
-    notificationsButton.textContent = notificationsEnabled
-      ? "Turn off Notifications"
-      : "Turn on Notifications";
+    notificationsButton.textContent = notificationsEnabled ? "Turn off Notifications" : "Turn on Notifications";
 
-    showNotification(
-      notificationsEnabled ? "Notifications are ON" : "Notifications are OFF"
-    );
+    // Give immediate feedback via in-page bubble if available (or console)
+    showNotification(notificationsEnabled ? "Notifications are ON" : "Notifications are OFF");
   });
 }
 
+/* ----------------------------- Welcome message ----------------------------- */
+function showWelcomeMessage() {
+  const speechEl = document.getElementById("speechText");
 
+  if (!speechEl) return; // Not on Home.html
+
+  // Show after page fully loads
+  setTimeout(() => {
+    speechEl.textContent = "Welcome back! I missed ya!";
+    speechEl.style.display = "flex";
+
+    // Remove after 4 seconds
+    setTimeout(() => {
+      speechEl.textContent = "";
+      speechEl.style.display = "none";
+    }, 4000);
+
+  }, 1200);
+}
+
+/* ----------------------------- Pet needs logic ----------------------------- */
 let petStats = {
   hunger: 80,
   happiness: 60,
@@ -70,36 +100,31 @@ let petStats = {
 };
 
 function checkPetNeeds() {
-  if (petStats.hunger < 30) return showNotification("I'm hungry! Please feed me!");
-  if (petStats.energy < 25) return showNotification("I'm so tired... can I nap soon?");
-  if (petStats.happiness < 40) return showNotification("I'm feeling a bit lonely. Can we play?");
+  if (!notificationsEnabled) return;
+  if (petStats.hunger < 30) { showNotification("I'm hungry! Please feed me!"); return; }
+  if (petStats.energy < 25) { showNotification("I'm so tired... can I nap soon?"); return; }
+  if (petStats.happiness < 40) { showNotification("I'm feeling a bit lonely. Can we play?"); return; }
   if (petStats.eventComing) {
     showNotification("Hey! You have an event coming up soon!");
     petStats.eventComing = false;
   }
 }
 
-// Check needs every 15 seconds
+// Periodic checks
 setInterval(checkPetNeeds, 15000);
 
-// Slowly reduce stats every 10 seconds
+// Slowly decay stats
 setInterval(() => {
-  petStats.hunger -= 5;
-  petStats.energy -= 3;
-  petStats.happiness -= 2;
-
-  // Keep values in range
-  Object.keys(petStats).forEach(key => {
-    petStats[key] = Math.max(0, Math.min(petStats[key], 100));
-  });
-
-  console.log(petStats);
+  petStats.hunger = Math.max(0, petStats.hunger - 5);
+  petStats.energy = Math.max(0, petStats.energy - 3);
+  petStats.happiness = Math.max(0, petStats.happiness - 2);
+  // log for debugging
+  // console.log("petStats", petStats);
 }, 10000);
 
-
+/* ----------------------------- Stat bars ----------------------------- */
 function initRandomStatBars() {
   const bars = document.querySelectorAll(".stats-overlay .bar");
-
   bars.forEach(bar => {
     const randomMileage = Math.floor(Math.random() * 21) + 5;
     bar.style.height = `${randomMileage * 10}px`;
@@ -107,10 +132,11 @@ function initRandomStatBars() {
   });
 }
 
-
-
+/* ----------------------------- Special overlays ----------------------------- */
+/* Handles toggling overlays attached to .special <li> items (defensive) */
 function initSpecialOverlays() {
   const specials = document.querySelectorAll(".special");
+  if (!specials || specials.length === 0) return;
 
   specials.forEach(specialLi => {
     const specialIcon = specialLi.querySelector(".special-icon");
@@ -119,22 +145,24 @@ function initSpecialOverlays() {
 
     specialOverlay.style.display = "none";
 
-    specialIcon.addEventListener("click", e => {
+    specialIcon.addEventListener("click", (e) => {
       e.stopPropagation();
 
+      // close others
       specials.forEach(other => {
         if (other !== specialLi) {
           other.classList.remove("active");
-          const overlay = other.querySelector(".special-overlay");
-          if (overlay) overlay.style.display = "none";
+          const o = other.querySelector(".special-overlay");
+          if (o) o.style.display = "none";
         }
       });
 
-      specialLi.classList.toggle("active");
-      specialOverlay.style.display = specialLi.classList.contains("active") ? "block" : "none";
+      const isActive = specialLi.classList.toggle("active");
+      specialOverlay.style.display = isActive ? "block" : "none";
     });
 
-    document.addEventListener("click", e => {
+    // close when clicking outside
+    document.addEventListener("click", (e) => {
       if (!specialOverlay.contains(e.target) && !specialIcon.contains(e.target)) {
         specialLi.classList.remove("active");
         specialOverlay.style.display = "none";
@@ -143,49 +171,85 @@ function initSpecialOverlays() {
   });
 }
 
-
-
+/* ----------------------------- Event Manager ----------------------------- */
+/* Safe, single event manager used across pages (works if elements missing) */
 function initEventManager() {
   const addEventBtn = document.getElementById("addEventBtn");
   const addEventForm = document.getElementById("addEventForm");
   const eventList = document.getElementById("eventList");
 
-  let savedEvents = JSON.parse(localStorage.getItem("events") || "[]");
+  if (!addEventBtn || !addEventForm || !eventList) return; // nothing to do on this page
+
+  // load saved events
+  let savedEvents = [];
+  try {
+    savedEvents = JSON.parse(localStorage.getItem("events") || "[]");
+    if (!Array.isArray(savedEvents)) savedEvents = [];
+  } catch (err) {
+    console.error("Failed reading events from localStorage:", err);
+    savedEvents = [];
+  }
 
   function renderEvents() {
     eventList.innerHTML = "";
-    savedEvents.forEach((event, index) => {
+    if (savedEvents.length === 0) {
+      const placeholder = document.createElement("div");
+      placeholder.className = "event-placeholder";
+      placeholder.textContent = "No events yet.";
+      eventList.appendChild(placeholder);
+      return;
+    }
+
+    savedEvents.forEach((event, idx) => {
       const card = document.createElement("div");
-      card.classList.add("event-card");
+      card.className = "event-card";
       card.innerHTML = `
-        <img src="${event.image}" alt="Event Image">
-        <p>${event.name}</p>
-        <p>${event.time}<br>${event.date}</p>
-        <button class="delete-btn" data-index="${index}">✖</button>
+        <img src="${escapeHtml(event.image || 'images/default.png')}" alt="Event Image">
+        <p class="event-name">${escapeHtml(event.name)}</p>
+        <p class="event-datetime">${escapeHtml(event.time)}<br>${escapeHtml(event.date)}</p>
+        <button class="delete-btn" data-index="${idx}">✖</button>
       `;
       eventList.appendChild(card);
     });
 
-    document.querySelectorAll(".delete-btn").forEach(btn => {
-      btn.addEventListener("click", e => {
-        savedEvents.splice(e.target.getAttribute("data-index"), 1);
+    // attach delete handlers
+    eventList.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const idx = Number(e.currentTarget.getAttribute("data-index"));
+        if (!Number.isFinite(idx)) return;
+        savedEvents.splice(idx, 1);
         localStorage.setItem("events", JSON.stringify(savedEvents));
         renderEvents();
+        showNotification("Event removed.");
       });
     });
   }
 
   addEventBtn.addEventListener("click", () => {
-    addEventForm.style.display = addEventForm.style.display === "none" ? "flex" : "none";
+    addEventForm.style.display = (addEventForm.style.display === "flex") ? "none" : "flex";
   });
 
-  addEventForm.addEventListener("submit", e => {
+  addEventForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const name = document.getElementById("eventName").value.trim();
-    const time = document.getElementById("eventTime").value;
-    const date = document.getElementById("eventDate").value;
-    const image = document.getElementById("eventImage").value || "images/default.png";
-    if (!name || !time || !date) return alert("Please fill in all required fields.");
+    const nameInput = document.getElementById("eventName");
+    const timeInput = document.getElementById("eventTime");
+    const dateInput = document.getElementById("eventDate");
+    const imageInput = document.getElementById("eventImage");
+
+    if (!nameInput || !timeInput || !dateInput) {
+      alert("Event form is missing required inputs on the page.");
+      return;
+    }
+
+    const name = nameInput.value.trim();
+    const time = timeInput.value;
+    const date = dateInput.value;
+    const image = (imageInput && imageInput.value.trim()) ? imageInput.value.trim() : "images/default.png";
+
+    if (!name || !time || !date) {
+      alert("Please fill in all required fields.");
+      return;
+    }
 
     savedEvents.push({ name, time, date, image });
     localStorage.setItem("events", JSON.stringify(savedEvents));
@@ -193,328 +257,203 @@ function initEventManager() {
     addEventForm.reset();
     addEventForm.style.display = "none";
     renderEvents();
+
+    showNotification(`Event added: ${name} on ${date} at ${time}`);
   });
 
+  // first render
   renderEvents();
 }
 
+/* ----------------------------- Activity Manager ----------------------------- */
+function initActivityManager() {
+  const addActivityBtn = document.getElementById("addActivityBtn");
+  const addActivityForm = document.getElementById("addActivityForm");
+  const activityList = document.getElementById("activityList");
 
+  if (!addActivityBtn || !addActivityForm || !activityList) return;
 
-function initCodeInputs() {
-  const inputs = document.querySelectorAll(".code-inputs input");
-  const redirectURL = "Home.html";
+  let savedActivities = [];
+  try {
+    savedActivities = JSON.parse(localStorage.getItem("activities") || "[]");
+    if (!Array.isArray(savedActivities)) savedActivities = [];
+  } catch (err) {
+    console.error("Failed reading activities from localStorage:", err);
+    savedActivities = [];
+  }
 
-  inputs.forEach((input, index) => {
-    input.addEventListener("input", e => {
-      e.target.value = e.target.value.replace(/[^0-9]/g, "").charAt(0);
+  function renderActivities() {
+    activityList.innerHTML = "";
+    if (savedActivities.length === 0) {
+      const placeholder = document.createElement("div");
+      placeholder.className = "activity-placeholder";
+      placeholder.textContent = "No activities yet.";
+      activityList.appendChild(placeholder);
+      return;
+    }
 
-      if (e.target.value && index < inputs.length - 1) inputs[index + 1].focus();
-
-      if (Array.from(inputs).every(i => i.value.length === 1)) {
-        const code = Array.from(inputs).map(i => i.value).join("");
-        console.log("Code entered:", code);
-        setTimeout(() => (window.location.href = redirectURL), 200);
-      }
-    });
-
-    input.addEventListener("keydown", e => {
-      if (e.key === "Backspace" && input.value === "" && index > 0) {
-        inputs[index - 1].focus();
-      }
-    });
-  });
-}
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  const addEventBtn = document.getElementById("addEventBtn");
-  const addEventForm = document.getElementById("addEventForm");
-  const eventList = document.getElementById("eventList");
-
-  // 🔹 Load saved events from localStorage
-  let savedEvents = JSON.parse(localStorage.getItem("events") || "[]");
-
-  function renderEvents() {
-    eventList.innerHTML = ""; // clear existing
-    savedEvents.forEach((event, index) => {
+    savedActivities.forEach((act, idx) => {
       const card = document.createElement("div");
-      card.classList.add("event-card");
+      card.className = "activity-card";
       card.innerHTML = `
-        <img src="${event.image}" alt="Event Image">
-        <p>${event.name}</p>
-        <p>${event.time}<br>${event.date}</p>
-        <button class="delete-btn" data-index="${index}">✖</button>
+        <img src="${escapeHtml(act.image || 'images/default.png')}" alt="Activity Image">
+        <p class="activity-name">${escapeHtml(act.name)}</p>
+        <p class="activity-datetime">${escapeHtml(act.time)}<br>${escapeHtml(act.date)}</p>
+        <button class="delete-activity" data-index="${idx}">✖</button>
       `;
-      eventList.appendChild(card);
+      activityList.appendChild(card);
     });
 
-    // Add delete button handlers
-    document.querySelectorAll(".delete-btn").forEach((btn) => {
+    activityList.querySelectorAll(".delete-activity").forEach(btn => {
       btn.addEventListener("click", (e) => {
-        const index = e.target.getAttribute("data-index");
-        deleteEvent(index);
+        const idx = Number(e.currentTarget.getAttribute("data-index"));
+        if (!Number.isFinite(idx)) return;
+        savedActivities.splice(idx, 1);
+        localStorage.setItem("activities", JSON.stringify(savedActivities));
+        renderActivities();
+        showNotification("Activity removed.");
       });
     });
   }
 
-  function deleteEvent(index) {
-    savedEvents.splice(index, 1); // remove from array
-    localStorage.setItem("events", JSON.stringify(savedEvents));
-    renderEvents(); // re-render UI
-  }
-
-  // 🔹 Show/hide form
-  addEventBtn.addEventListener("click", () => {
-    addEventForm.style.display =
-      addEventForm.style.display === "none" ? "flex" : "none";
+  addActivityBtn.addEventListener("click", () => {
+    addActivityForm.style.display = (addActivityForm.style.display === "flex") ? "none" : "flex";
   });
 
-  // 🔹 Handle add form submission
-  addEventForm.addEventListener("submit", (e) => {
+  addActivityForm.addEventListener("submit", (e) => {
     e.preventDefault();
+    const nameInput = document.getElementById("activityName");
+    const timeInput = document.getElementById("activityTime");
+    const dateInput = document.getElementById("activityDate");
+    const imageInput = document.getElementById("activityImage");
 
-    const name = document.getElementById("eventName").value.trim();
-    const time = document.getElementById("eventTime").value;
-    const date = document.getElementById("eventDate").value;
-    const image = document.getElementById("eventImage").value || "images/default.png";
+    if (!nameInput || !timeInput || !dateInput) {
+      alert("Activity form is missing required inputs on this page.");
+      return;
+    }
+
+    const name = nameInput.value.trim();
+    const time = timeInput.value;
+    const date = dateInput.value;
+    const image = (imageInput && imageInput.value.trim()) ? imageInput.value.trim() : "images/default.png";
 
     if (!name || !time || !date) {
       alert("Please fill in all required fields.");
       return;
     }
 
-    // Save event
-    const newEvent = { name, time, date, image };
-    savedEvents.push(newEvent);
-    localStorage.setItem("events", JSON.stringify(savedEvents));
+    savedActivities.push({ name, time, date, image });
+    localStorage.setItem("activities", JSON.stringify(savedActivities));
+    addActivityForm.reset();
+    addActivityForm.style.display = "none";
+    renderActivities();
 
-    // Reset form + re-render
-    addEventForm.reset();
-    addEventForm.style.display = "none";
-    renderEvents();
+    showNotification(`Activity added: ${name} on ${date} at ${time}`);
   });
 
-  // Initial render
-  renderEvents();
-});
+  renderActivities();
+}
 
-// Wait until DOM is fully loaded
-document.addEventListener("DOMContentLoaded", () => {
-  // Select all the inputs in the code section
+/* ----------------------------- Code Inputs (4-digit) ----------------------------- */
+function initCodeInputs() {
   const inputs = document.querySelectorAll(".code-inputs input");
+  if (!inputs || inputs.length === 0) return;
 
-  // Set the page to redirect to after the code is filled
-  const redirectURL = "Home.html"; // make sure this file exists
+  const redirectURL = "Home.html";
 
-  // Loop through each input
   inputs.forEach((input, index) => {
-    // Handle user input
     input.addEventListener("input", (e) => {
-      let value = e.target.value;
+      e.target.value = e.target.value.replace(/[^0-9]/g, "").charAt(0);
 
-      // Allow only numbers
-      value = value.replace(/[^0-9]/g, "");
-      e.target.value = value;
+      if (e.target.value && index < inputs.length - 1) inputs[index + 1].focus();
 
-      // Make sure only one digit is in the input
-      if (value.length > 1) {
-        e.target.value = value.charAt(0);
-      }
-
-      // Automatically move focus to next input if available
-      if (value && index < inputs.length - 1) {
-        inputs[index + 1].focus();
-      }
-
-      // Check if all inputs are filled
       const allFilled = Array.from(inputs).every(i => i.value.length === 1);
-
       if (allFilled) {
-        // Optional: get the code
         const code = Array.from(inputs).map(i => i.value).join("");
         console.log("Code entered:", code);
-
-        // Redirect to Home.html after a tiny delay to ensure last digit registers
-        setTimeout(() => {
-          window.location.href = redirectURL;
-        }, 200);
+        setTimeout(() => { window.location.href = redirectURL; }, 200);
       }
     });
 
-    // Allow user to go back using Backspace
     input.addEventListener("keydown", (e) => {
       if (e.key === "Backspace" && e.target.value === "" && index > 0) {
         inputs[index - 1].focus();
       }
     });
   });
-});
+}
 
+/* ----------------------------- Pet track (carousel) ----------------------------- */
+function initPetTrack() {
+  const track = document.getElementById('petTrack');
+  if (!track) return;
 
+  const items = Array.from(track.children);
+  // Avoid infinite cloning if already cloned (defensive)
+  const clonesCount = items.filter(it => it.dataset?.cloned === "true").length;
+  if (clonesCount > 0) return; // already setup
 
-document.addEventListener("DOMContentLoaded", () => {
-  const addActivityBtn = document.getElementById("addActivityBtn");
-  const addActivityForm = document.getElementById("addActivityForm");
-  const activityList = document.getElementById("activityList");
-
-  if (!addActivityBtn || !addActivityForm || !activityList) return; // skip if not on this page
-
-  // Load saved activities
-  let savedActivities = JSON.parse(localStorage.getItem("activities") || "[]");
-
-  function renderActivities() {
-    activityList.innerHTML = "";
-    savedActivities.forEach((activity, index) => {
-      const card = document.createElement("div");
-      card.classList.add("activity-card");
-      card.innerHTML = `
-        <img src="${activity.image}" alt="Activity Image">
-        <p>${activity.name}</p>
-        <p>${activity.time}<br>${activity.date}</p>
-        <button class="delete-activity" data-index="${index}">✖</button>
-      `;
-      activityList.appendChild(card);
-    });
-
-    // Delete functionality
-    document.querySelectorAll(".delete-activity").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const index = e.target.getAttribute("data-index");
-        deleteActivity(index);
-      });
-    });
-  }
-
-  function deleteActivity(index) {
-    savedActivities.splice(index, 1);
-    localStorage.setItem("activities", JSON.stringify(savedActivities));
-    renderActivities();
-  }
-
-  // Show/hide add form
-  addActivityBtn.addEventListener("click", () => {
-    addActivityForm.style.display =
-      addActivityForm.style.display === "none" ? "flex" : "none";
+  items.forEach(item => {
+    const clone = item.cloneNode(true);
+    // mark clones in case of repeated initialization
+    clone.dataset.cloned = "true";
+    track.appendChild(clone);
   });
 
-  // Add new activity
-  addActivityForm.addEventListener("submit", (e) => {
-    e.preventDefault();
+  document.body.style.overflow = "auto";
+  document.documentElement.style.overflow = "auto";
+}
 
-    const name = document.getElementById("activityName").value.trim();
-    const time = document.getElementById("activityTime").value;
-    const date = document.getElementById("activityDate").value;
-    const image = document.getElementById("activityImage").value || "images/default.png";
-
-    if (!name || !time || !date) {
-      alert("Please fill in all required fields.");
-      return;
-    }
-
-    const newActivity = { name, time, date, image };
-    savedActivities.push(newActivity);
-    localStorage.setItem("activities", JSON.stringify(savedActivities));
-
-    addActivityForm.reset();
-    addActivityForm.style.display = "none";
-    renderActivities();
-  });
-
-  // Initial render
-  renderActivities();
-});
-
-//pet selection.js//
-const track = document.getElementById('petTrack');
-    const items = Array.from(track.children);
-
-    // Clone items until we fill twice the width for a smooth infinite loop
-    items.forEach(item => {
-      const clone = item.cloneNode(true);
-      track.appendChild(clone);
-    });
-
-    document.body.style.overflow = "auto";
-document.documentElement.style.overflow = "auto";
-
-document.addEventListener("DOMContentLoaded", function () {
-  const mobile = window.matchMedia("(max-width: 768px)");
-
-  function handleNavBehavior() {
-    const isMobile = mobile.matches;
-
-    // Select navbar items
-    const activity = document.querySelector(".activity-icon");
-    const special = document.querySelector(".special-icon");
-    const stats = document.querySelector(".stats-icon");
-    const gear = document.querySelector(".gear-icon");
-
-    if (isMobile) {
-      // MOBILE MODE — make icons link to pages
-      activity.onclick = () => (window.location.href = "activities.html");
-      special.onclick = () => (window.location.href = "special.needs.html");
-      stats.onclick = () => (window.location.href = "stats.html");
-      gear.onclick = () => (window.location.href = "settings.html");
-
-      // Hide overlays on mobile
-      document.querySelectorAll(".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay")
-        .forEach(el => el.style.display = "none");
-    } else {
-      // DESKTOP MODE — overlays behave normally
-      activity.onclick = null;
-      special.onclick = null;
-      stats.onclick = null;
-      gear.onclick = null;
-
-      // You can restore hover/overlay behavior if you use JS toggles
-      document.querySelectorAll(".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay")
-        .forEach(el => el.style.display = "");
-    }
-  }
-
-  // Run on load and whenever screen resizes
-  handleNavBehavior();
-  mobile.addEventListener("change", handleNavBehavior);
-});
-
+/* ----------------------------- Navbar behavior (desktop overlays + mobile links) ----------------------------- */
 function initNavbar() {
   const mobile = window.matchMedia("(max-width: 768px)");
 
   function handleNavBehavior() {
     const isMobile = mobile.matches;
 
-    // Select navbar items
+    // Select icons (attempt multiple selectors to accommodate pages where markup differs)
+    const newPetImg = document.querySelector(".newpet img");
     const activity = document.querySelector(".activity-icon");
     const special = document.querySelector(".special-icon");
     const stats = document.querySelector(".stats-icon");
     const gear = document.querySelector(".gear-icon");
 
-    if (!activity || !special || !stats || !gear) return;
+    // Helper to hide or show overlays
+    const overlaySelector = ".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay";
+    const overlays = document.querySelectorAll(overlaySelector);
 
     if (isMobile) {
-      // MOBILE MODE — redirect to pages
-      activity.onclick = () => (window.location.href = "activities.html");
-      special.onclick = () => (window.location.href = "special.needs.html");
-      stats.onclick = () => (window.location.href = "stats.html");
-      gear.onclick = () => (window.location.href = "settings.html");
+      // mobile redirects
+      if (newPetImg) newPetImg.onclick = () => (window.location.href = "add.new.html");
+      if (activity) activity.onclick = () => (window.location.href = "activities.html");
+      if (special) special.onclick = () => (window.location.href = "special.needs.html");
+      if (stats) stats.onclick = () => (window.location.href = "stats.html");
+      if (gear) gear.onclick = () => (window.location.href = "settings.html");
 
-      document.querySelectorAll(".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay")
-        .forEach(el => el && (el.style.display = "none"));
+      overlays.forEach(el => { if (el) el.style.display = "none"; });
     } else {
-      // DESKTOP — dropdown overlays
-      activity.onclick = null;
-      special.onclick = null;
-      stats.onclick = null;
-      gear.onclick = null;
+      // desktop: remove mobile onclick handlers so overlay logic can run
+      if (newPetImg) newPetImg.onclick = null;
+      if (activity) activity.onclick = null;
+      if (special) special.onclick = null;
+      if (stats) stats.onclick = null;
+      if (gear) gear.onclick = null;
 
-      document.querySelectorAll(".activity-overlay, .special-overlay, .stats-overlay, #settingsOverlay")
-        .forEach(el => el && (el.style.display = ""));
+      overlays.forEach(el => { if (el) el.style.display = ""; });
     }
   }
 
   handleNavBehavior();
+  // Re-run when viewport crosses breakpoint
   mobile.addEventListener("change", handleNavBehavior);
 }
 
-
-
+/* ----------------------------- Utilities ----------------------------- */
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
