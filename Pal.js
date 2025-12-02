@@ -434,6 +434,74 @@ function initNavbar() {
   mobile.addEventListener("change", handleNavBehavior);
 }
 
+
+// =========================================
+// ADD NEW PET (SAVE TO LOCALSTORAGE)
+// =========================================
+document.addEventListener("DOMContentLoaded", () => {
+  const petNameInput = document.getElementById("petName");
+  const petTypeSelect = document.querySelector("main.new-pet-page select");
+  const createPetBtn = document.querySelector(".make-pet-btn");
+
+  if (createPetBtn) {
+      createPetBtn.addEventListener("click", () => {
+          const petName = petNameInput.value.trim();
+          const petType = petTypeSelect.value;
+
+          if (!petName || !petType) {
+              alert("Please enter a pet name and choose a pet type.");
+              return;
+          }
+
+          // Default images for now
+          const petImages = {
+              dog: "Images/dog.png",
+              cat: "Images/cat.png",
+              rabbit: "Images/rabbit.png",
+              hamster: "Images/hamster.png",
+              goldfish: "Images/goldfish.png",
+              parrot: "Images/parrot.png",
+              capybara: "Images/capy.png",
+              lizard: "Images/lizard.png",
+              chicken: "Images/chicken.png",
+              "guinea-pig": "Images/guinea.png",
+              custom: "Images/custom.png" // fallback
+          };
+
+          const petImage = petImages[petType] || "Images/default.png";
+
+          const newPet = {
+              name: petName,
+              type: petType,
+              image: petImage
+          };
+
+          localStorage.setItem("currentPet", JSON.stringify(newPet));
+
+          window.location.href = "Home.html";
+      });
+  }
+});
+
+
+// =========================================
+// LOAD PET ON HOME PAGE
+// =========================================
+document.addEventListener("DOMContentLoaded", () => {
+  const petImg = document.querySelector(".pet");
+
+  // Only run this on the home page
+  if (petImg) {
+      const savedPet = localStorage.getItem("currentPet");
+
+      if (savedPet) {
+          const pet = JSON.parse(savedPet);
+          petImg.src = pet.image;
+          petImg.alt = pet.name + " the " + pet.type;
+      }
+  }
+});
+
 /* ----------------------------- Utilities ----------------------------- */
 function escapeHtml(str) {
   return String(str || "")
