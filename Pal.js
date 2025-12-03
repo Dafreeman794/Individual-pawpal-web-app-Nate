@@ -488,19 +488,28 @@ document.addEventListener("DOMContentLoaded", () => {
 // LOAD PET ON HOME PAGE
 // =========================================
 document.addEventListener("DOMContentLoaded", () => {
-  const petImg = document.querySelector(".pet");
+  const savedPet = localStorage.getItem("currentPet");
+  if (!savedPet) return; // no pet created yet
 
-  // Only run this on the home page
+  const pet = JSON.parse(savedPet);
+
+  // The pet image element on Home.html
+  const petImg = document.getElementById("currentPetImage");
+
+  // The pet name element on Home.html
+  const petName = document.getElementById("currentPetName");
+
+  // Populate them if they exist
   if (petImg) {
-      const savedPet = localStorage.getItem("currentPet");
+    petImg.src = pet.image;
+    petImg.alt = pet.name;
+  }
 
-      if (savedPet) {
-          const pet = JSON.parse(savedPet);
-          petImg.src = pet.image;
-          petImg.alt = pet.name + " the " + pet.type;
-      }
+  if (petName) {
+    petName.textContent = pet.name;
   }
 });
+
 
 /* ----------------------------- Utilities ----------------------------- */
 function escapeHtml(str) {
