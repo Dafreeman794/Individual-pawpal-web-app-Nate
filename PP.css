@@ -37,35 +37,32 @@ body {
       overflow: auto;
     }
 
+
     .scroll-pets {
       width: 100%;
-      overflow: auto;
-      white-space: nowrap;
+      height: 100%;
+      overflow: hidden; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px 0;
     }
-
+    
     .scroll-track {
       display: flex;
       gap: 15px;
-      animation: scroll 15s linear infinite;
+      margin: 0 auto;
     }
-
+    
     .scroll-track li {
       list-style: none;
     }
-
+    
     .scroll-track img {
       height: 150px;
       width: auto;
     }
-
-    @keyframes scroll {
-      from {
-        transform: translateX(0);
-      }
-      to {
-        transform: translateX(-80%);
-      }
-    }
+    
 
 p {
   display:flex;
