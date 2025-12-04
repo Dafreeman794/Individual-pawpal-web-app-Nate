@@ -371,17 +371,44 @@ function initCodeInputs() {
 
 /* ----------------------------- Pet track (carousel) ----------------------------- */
 function initPetTrack() {
-  const track = document.getElementById('petTrack');
+  const track = document.getElementById("petTrack");
   if (!track) return;
 
-  const items = Array.from(track.children);
-  // Avoid infinite cloning if already cloned (defensive)
-  const clonesCount = items.filter(it => it.dataset?.cloned === "true").length;
-  if (clonesCount > 0) return; // already setup
+  // Load saved pets
+  let pets = [];
+  try {
+    pets = JSON.parse(localStorage.getItem("pets") || "[]");
+    if (!Array.isArray(pets)) pets = [];
+  } catch {
+    pets = [];
+  }
 
+  // Clear track before adding pets
+  track.innerHTML = "";
+
+  // If no pets exist, show placeholder
+  if (pets.length === 0) {
+    track.innerHTML = `<p class="no-pets">No pets created yet.</p>`;
+    return;
+  }
+
+  // Build pet items dynamically
+  pets.forEach(pet => {
+    const item = document.createElement("div");
+    item.className = "pet-item";
+
+    item.innerHTML = `
+      <img src="${pet.image}" alt="${pet.name}">
+      <p class="pet-name">${pet.name}</p>
+    `;
+
+    track.appendChild(item);
+  });
+
+  // Clone items for infinite scroll
+  const items = Array.from(track.children);
   items.forEach(item => {
     const clone = item.cloneNode(true);
-    // mark clones in case of repeated initialization
     clone.dataset.cloned = "true";
     track.appendChild(clone);
   });
@@ -389,6 +416,7 @@ function initPetTrack() {
   document.body.style.overflow = "auto";
   document.documentElement.style.overflow = "auto";
 }
+
 
 /* ----------------------------- Navbar behavior (desktop overlays + mobile links) ----------------------------- */
 function initNavbar() {
@@ -443,45 +471,63 @@ document.addEventListener("DOMContentLoaded", () => {
   const petTypeSelect = document.querySelector("main.new-pet-page select");
   const createPetBtn = document.querySelector(".make-pet-btn");
 
-  if (createPetBtn) {
-      createPetBtn.addEventListener("click", () => {
-          const petName = petNameInput.value.trim();
-          const petType = petTypeSelect.value;
+  if (!createPetBtn) return;
 
-          if (!petName || !petType) {
-              alert("Please enter a pet name and choose a pet type.");
-              return;
-          }
+  // Default images mapping (keeps inside handler scope too)
+  const petImages = {
+    dog: "Images/dog.png",
+    cat: "Images/cat.png",
+    rabbit: "Images/rabbit.png",
+    hamster: "Images/hamster.png",
+    goldfish: "Images/goldfish.png",
+    parrot: "Images/parrot.png",
+    capybara: "Images/capy.png",
+    lizard: "Images/lizard.png",
+    chicken: "Images/chicken.png",
+    "guinea-pig": "Images/guinea.png",
+    custom: "Images/custom.png" // fallback
+  };
 
-          // Default images for now
-          const petImages = {
-              dog: "Images/dog.png",
-              cat: "Images/cat.png",
-              rabbit: "Images/rabbit.png",
-              hamster: "Images/hamster.png",
-              goldfish: "Images/goldfish.png",
-              parrot: "Images/parrot.png",
-              capybara: "Images/capy.png",
-              lizard: "Images/lizard.png",
-              chicken: "Images/chicken.png",
-              "guinea-pig": "Images/guinea.png",
-              custom: "Images/custom.png" // fallback
-          };
+  createPetBtn.addEventListener("click", (e) => {
+    // prevent accidental form submissions if button inside form
+    e.preventDefault();
 
-          const petImage = petImages[petType] || "Images/default.png";
+    if (!petNameInput || !petTypeSelect) {
+      alert("Pet creation inputs are missing on the page.");
+      return;
+    }
 
-          const newPet = {
-              name: petName,
-              type: petType,
-              image: petImage
-          };
+    const petName = petNameInput.value.trim();
+    const petType = petTypeSelect.value;
 
-          localStorage.setItem("currentPet", JSON.stringify(newPet));
+    if (!petName || !petType) {
+      alert("Please enter a pet name and choose a pet type.");
+      return;
+    }
 
-          window.location.href = "Home.html";
-      });
-  }
+    const petImage = petImages[petType] || "Images/default.png";
+    const newPet = { name: petName, type: petType, image: petImage };
+
+    // Save as "currentPet" (for Home page quick load)
+    localStorage.setItem("currentPet", JSON.stringify(newPet));
+
+    // Also add to the pets array (collection)
+    let pets = [];
+    try {
+      pets = JSON.parse(localStorage.getItem("pets") || "[]");
+      if (!Array.isArray(pets)) pets = [];
+    } catch (err) {
+      pets = [];
+    }
+
+    pets.push(newPet);
+    localStorage.setItem("pets", JSON.stringify(pets));
+
+    // go to home (or to a pet profile later)
+    window.location.href = "Home.html";
+  });
 });
+
 
 
 // =========================================
@@ -508,6 +554,37 @@ document.addEventListener("DOMContentLoaded", () => {
   if (petName) {
     petName.textContent = pet.name;
   }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const list = document.getElementById("petList");
+    if (!list) return;
+
+    let pets = JSON.parse(localStorage.getItem("pets") || "[]");
+
+    pets.forEach((pet, index) => {
+        const li = document.createElement("li");
+
+        li.innerHTML = `
+            <a href="Home.html" data-index="${index}" class="pet-select">
+                <img src="${pet.image}" alt="${pet.name}">
+                <p class="pet-label">${pet.name}</p>
+            </a>
+        `;
+
+        list.appendChild(li);
+    });
+
+    // When user selects a pet → set it as currentPet
+    document.addEventListener("click", (e) => {
+        if (e.target.closest(".pet-select")) {
+            e.preventDefault();
+            const index = e.target.closest(".pet-select").dataset.index;
+            let pets = JSON.parse(localStorage.getItem("pets") || "[]");
+            localStorage.setItem("currentPet", JSON.stringify(pets[index]));
+            window.location.href = "Home.html";
+        }
+    });
 });
 
 
