@@ -587,6 +587,57 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+    const track = document.getElementById("petList");
+
+    function loadPets() {
+        let pets = JSON.parse(localStorage.getItem("pets") || "[]");
+
+        track.innerHTML = "";
+
+        if (pets.length === 0) {
+            track.innerHTML = "<p style='color:white;'>No pets found.</p>";
+            return;
+        }
+
+        pets.forEach((pet, index) => {
+            const li = document.createElement("li");
+            li.className = "pet-entry";
+
+            li.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                    <img src="${pet.image}" alt="${pet.name}" style="height:150px;">
+                    <div class="pet-label">${pet.name}</div>
+                    <button class="remove-btn" data-index="${index}">Remove</button>
+                </div>
+            `;
+
+            track.appendChild(li);
+        });
+
+        // Attach delete events
+        document.querySelectorAll(".remove-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                removePet(btn.dataset.index);
+            });
+        });
+    }
+
+    function removePet(index) {
+        let pets = JSON.parse(localStorage.getItem("pets") || "[]");
+
+        // Remove pet by index
+        pets.splice(index, 1);
+
+        // Save updated list
+        localStorage.setItem("pets", JSON.stringify(pets));
+
+        // Refresh UI
+        loadPets();
+    }
+
+    loadPets();
+});
 
 /* ----------------------------- Utilities ----------------------------- */
 function escapeHtml(str) {

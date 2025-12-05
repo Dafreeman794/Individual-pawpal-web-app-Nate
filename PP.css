@@ -41,17 +41,26 @@ body {
     .scroll-pets {
       width: 100%;
       height: 100%;
-      overflow: hidden; 
+      overflow-x: scroll;
+      overflow-y: hidden; 
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px 0;
+      scroll-behavior: auto;
+      cursor: grab;
     }
     
+
+    .scroll-pets:active {
+      cursor: grabbing;
+    }
+
     .scroll-track {
       display: flex;
       gap: 15px;
       margin: 0 auto;
+      flex-wrap: nowrap;
     }
     
     .scroll-track li {
@@ -60,7 +69,7 @@ body {
     
     .scroll-track img {
       height: 150px;
-      width: auto;
+      width: auto; 
     }
 
     .pet-label {
@@ -69,6 +78,22 @@ body {
       justify-content: center;
     }
     
+    .remove-btn {
+    margin-top: 8px;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-family: "Pixelify Sans";
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.remove-btn:hover {
+    background-color: #c9302c;
+}
+
 
 p {
   display:flex;
@@ -770,7 +795,6 @@ h1 {
 .back-btn {
   display:flex;
   align-items:center;
-  padding-left:30px;
  background-image: url(Images/back.png);
  min-height: 100px;
  font-size: 60px;
@@ -780,6 +804,7 @@ h1 {
  padding-left:50px;
  padding-right:50px;
 }
+
 
 .faq-container {
   display:flex;
