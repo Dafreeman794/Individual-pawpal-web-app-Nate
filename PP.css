@@ -1207,7 +1207,6 @@ justify-content:center;
 .label {
   font-size: large;
   margin-bottom: 10px;
-  background-image: url(Images/back.png);
   background-position: center;
   background-size:contain;
   background-repeat: no-repeat;
