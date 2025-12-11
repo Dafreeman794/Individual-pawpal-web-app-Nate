@@ -485,17 +485,13 @@ document.addEventListener("DOMContentLoaded", () => {
     lizard: "Images/lizard.png",
     chicken: "Images/chicken.png",
     "guinea-pig": "Images/guinea.png",
+    falcon: "Images/falcon.png",
+    pidgeon: "Images/pidgeon.png",
     custom: "Images/custom.png" // fallback
   };
 
   createPetBtn.addEventListener("click", (e) => {
-    // prevent accidental form submissions if button inside form
     e.preventDefault();
-
-    if (!petNameInput || !petTypeSelect) {
-      alert("Pet creation inputs are missing on the page.");
-      return;
-    }
 
     const petName = petNameInput.value.trim();
     const petType = petTypeSelect.value;
@@ -505,27 +501,28 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const petImage = petImages[petType] || "Images/default.png";
-    const newPet = { name: petName, type: petType, image: petImage };
+    let petImage;
 
-    // Save as "currentPet" (for Home page quick load)
-    localStorage.setItem("currentPet", JSON.stringify(newPet));
-
-    // Also add to the pets array (collection)
-    let pets = [];
-    try {
-      pets = JSON.parse(localStorage.getItem("pets") || "[]");
-      if (!Array.isArray(pets)) pets = [];
-    } catch (err) {
-      pets = [];
+    if (petType === "custom" && customImageData) {
+        petImage = customImageData; // user's uploaded image
+    } else {
+        petImage = petImages[petType] || "Images/default.png";
     }
 
+    const newPet = { 
+      name: petName, 
+      type: petType, 
+      image: petImage 
+    };
+
+    localStorage.setItem("currentPet", JSON.stringify(newPet));
+
+    let pets = JSON.parse(localStorage.getItem("pets") || "[]");
     pets.push(newPet);
     localStorage.setItem("pets", JSON.stringify(pets));
 
-    // go to home (or to a pet profile later)
     window.location.href = "Home.html";
-  });
+});
 });
 
 
@@ -637,6 +634,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     loadPets();
+});
+
+const select = document.querySelector("select");
+const customInput = document.getElementById("customImageInput");
+const preview = document.getElementById("customPreview");
+
+let customImageData = null; 
+
+select.addEventListener("change", () => {
+    if (select.value === "custom") {
+        customInput.click(); // open file picker
+    }
+});
+
+customInput.addEventListener("change", () => {
+    const file = customInput.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        customImageData = e.target.result; // Base64 image
+        preview.src = customImageData;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
 });
 
 /* ----------------------------- Utilities ----------------------------- */
