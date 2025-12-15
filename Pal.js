@@ -7,6 +7,7 @@
  ***************************************************************/
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (document.body.classList.contains("pets")) return;
   // Top-level init
   initNotificationSettings();
   initSpecialOverlays();
@@ -16,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCodeInputs();
   initPetTrack();
   initNavbar();
+  initNavbarRandomStats();
   showWelcomeMessage();
 });
 
@@ -463,6 +465,40 @@ function initNavbar() {
 }
 
 
+/* ----------------------------- Navbar behavior (randomized) ----------------------------- */
+function initNavbarRandomStats() {
+  const saved = localStorage.getItem("navbarStats");
+  if (!saved) return;
+
+  const stats = JSON.parse(saved);
+
+  // Feeding times
+  document.querySelectorAll(".feeding-content p").forEach((p, i) => {
+    if (stats.feeding[i]) p.textContent = stats.feeding[i];
+  });
+
+  // Exercise
+  const exercise = document.querySelectorAll(".exercise-content p");
+  if (exercise.length >= 4) {
+    exercise[0].textContent = stats.exercise.miles;
+    exercise[1].textContent = stats.exercise.time1;
+    exercise[2].textContent = stats.exercise.duration;
+    exercise[3].textContent = stats.exercise.time2;
+  }
+
+  // Medication
+  document.querySelectorAll(".medication-times p").forEach((p, i) => {
+    if (stats.medication[i]) p.textContent = stats.medication[i];
+  });
+
+  // Waste
+  document.querySelectorAll(".waste-content .img-time-column p").forEach((p, i) => {
+    if (stats.waste[i]) p.textContent = stats.waste[i];
+  });
+}
+
+
+
 // =========================================
 // ADD NEW PET (SAVE TO LOCALSTORAGE)
 // =========================================
@@ -515,6 +551,36 @@ document.addEventListener("DOMContentLoaded", () => {
       image: petImage 
     };
 
+    function randomTime() {
+      const hour = Math.floor(Math.random() * 12) + 1;
+      const minute = Math.random() < 0.5 ? "00" : "30";
+      const period = Math.random() < 0.5 ? "A.M." : "P.M.";
+      return `${hour}:${minute} ${period}`;
+    }
+    
+    function randomMiles() {
+      return `${Math.floor(Math.random() * 5) + 1} Miles`;
+    }
+    
+    function randomHours() {
+      return `${Math.floor(Math.random() * 3) + 1} Hours`;
+    }
+    
+    const navbarStats = {
+      feeding: [randomTime(), randomTime(), randomTime()],
+      exercise: {
+        miles: randomMiles(),
+        time1: randomTime(),
+        duration: randomHours(),
+        time2: randomTime()
+      },
+      medication: [randomTime(), randomTime(), randomTime()],
+      waste: [randomTime(), randomTime(), randomTime()]
+    };
+    
+    // Save ONLY when pet is created
+    localStorage.setItem("navbarStats", JSON.stringify(navbarStats));
+    
     localStorage.setItem("currentPet", JSON.stringify(newPet));
 
     let pets = JSON.parse(localStorage.getItem("pets") || "[]");
@@ -636,7 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadPets();
 });
 
-const select = document.querySelector("select");
+const select = document.querySelector("#petlist li");
 const customInput = document.getElementById("customImageInput");
 const preview = document.getElementById("customPreview");
 
