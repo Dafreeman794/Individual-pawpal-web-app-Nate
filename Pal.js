@@ -620,89 +620,96 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    const list = document.getElementById("petList");
-    if (!list) return;
+  const list = document.getElementById("petList");
+  if (!list) return;
 
-    let pets = JSON.parse(localStorage.getItem("pets") || "[]");
+  function loadPets() {
+      list.innerHTML = "";
 
-    pets.forEach((pet, index) => {
-        const li = document.createElement("li");
+      let pets = JSON.parse(localStorage.getItem("pets") || "[]");
 
-        li.innerHTML = `
-            <a href="Home.html" data-index="${index}" class="pet-select">
-                <img src="${pet.image}" alt="${pet.name}">
-                <p class="pet-label">${pet.name}</p>
-            </a>
-        `;
+      pets.forEach((pet, index) => {
+          const li = document.createElement("li");
 
-        list.appendChild(li);
-    });
+          li.innerHTML = `
+              <div class="pet-card">
+                  <a href="Home.html" data-index="${index}" class="pet-select">
+                      <img src="${pet.image}" alt="${pet.name}">
+                      <p class="pet-label">${pet.name}</p>
+                  </a>
+                  <button class="remove-pet-btn" data-index="${index}">Remove</button>
+              </div>
+          `;
 
-    // When user selects a pet → set it as currentPet
-    document.addEventListener("click", (e) => {
-        if (e.target.closest(".pet-select")) {
-            e.preventDefault();
-            const index = e.target.closest(".pet-select").dataset.index;
-            let pets = JSON.parse(localStorage.getItem("pets") || "[]");
-            localStorage.setItem("currentPet", JSON.stringify(pets[index]));
-            window.location.href = "Home.html";
-        }
-    });
+          list.appendChild(li);
+      });
+  }
+
+  // Handle pet selection
+  list.addEventListener("click", (e) => {
+      const petLink = e.target.closest(".pet-select");
+      if (petLink) {
+          e.preventDefault();
+          const index = petLink.dataset.index;
+          const pets = JSON.parse(localStorage.getItem("pets") || "[]");
+          localStorage.setItem("currentPet", JSON.stringify(pets[index]));
+          window.location.href = "Home.html";
+      }
+  });
+
+  // Handle removal (separate, isolated)
+  list.addEventListener("click", (e) => {
+      if (e.target.classList.contains("remove-pet-btn")) {
+          e.stopPropagation();
+
+          const index = Number(e.target.dataset.index);
+          let pets = JSON.parse(localStorage.getItem("pets") || "[]");
+
+          // Remove pet
+          pets.splice(index, 1);
+          localStorage.setItem("pets", JSON.stringify(pets));
+
+          // If removed pet was currentPet, clear it
+          const current = JSON.parse(localStorage.getItem("currentPet") || "null");
+          if (current && current.name === pets[index]?.name) {
+              localStorage.removeItem("currentPet");
+          }
+
+          loadPets();
+      }
+  });
+
+  loadPets();
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    const track = document.getElementById("petList");
 
-    function loadPets() {
-        let pets = JSON.parse(localStorage.getItem("pets") || "[]");
 
-        track.innerHTML = "";
+// // ------------------------
+//         // Attach delete events
+//         document.querySelectorAll(".remove-btn").forEach(btn => {
+//             btn.addEventListener("click", () => {
+//                 removePet(btn.dataset.index);
+//             });
+//         });
+    
 
-        if (pets.length === 0) {
-            track.innerHTML = "<p style='color:white;'>No pets found.</p>";
-            return;
-        }
+//     function removePet(index) {
+//         let pets = JSON.parse(localStorage.getItem("pets") || "[]");
 
-        pets.forEach((pet, index) => {
-            const li = document.createElement("li");
-            li.className = "pet-entry";
+//         // Remove pet by index
+//         pets.splice(index, 1);
 
-            li.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center;">
-                    <img src="${pet.image}" alt="${pet.name}" style="height:150px;">
-                    <div class="pet-label">${pet.name}</div>
-                    <button class="remove-btn" data-index="${index}">Remove</button>
-                </div>
-            `;
+//         // Save updated list
+//         localStorage.setItem("pets", JSON.stringify(pets));
 
-            track.appendChild(li);
-        });
+//         // Refresh UI
+//         loadPets();
+//     }
 
-        // Attach delete events
-        document.querySelectorAll(".remove-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                removePet(btn.dataset.index);
-            });
-        });
-    }
-
-    function removePet(index) {
-        let pets = JSON.parse(localStorage.getItem("pets") || "[]");
-
-        // Remove pet by index
-        pets.splice(index, 1);
-
-        // Save updated list
-        localStorage.setItem("pets", JSON.stringify(pets));
-
-        // Refresh UI
-        loadPets();
-    }
-
-    loadPets();
-});
-
-const select = document.querySelector("#petlist li");
+//     loadPets();
+// // ---------------------------
+    
+const select = document.querySelector("select");
 const customInput = document.getElementById("customImageInput");
 const preview = document.getElementById("customPreview");
 
