@@ -683,32 +683,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-
-// // ------------------------
-//         // Attach delete events
-//         document.querySelectorAll(".remove-btn").forEach(btn => {
-//             btn.addEventListener("click", () => {
-//                 removePet(btn.dataset.index);
-//             });
-//         });
-    
-
-//     function removePet(index) {
-//         let pets = JSON.parse(localStorage.getItem("pets") || "[]");
-
-//         // Remove pet by index
-//         pets.splice(index, 1);
-
-//         // Save updated list
-//         localStorage.setItem("pets", JSON.stringify(pets));
-
-//         // Refresh UI
-//         loadPets();
-//     }
-
-//     loadPets();
-// // ---------------------------
-    
 const select = document.querySelector("select");
 const customInput = document.getElementById("customImageInput");
 const preview = document.getElementById("customPreview");
@@ -732,6 +706,42 @@ customInput.addEventListener("change", () => {
         preview.style.display = "block";
     };
     reader.readAsDataURL(file);
+});
+
+/* ----------------------------- Sign-in Page ----------------------------- */
+document.addEventListener("DOMContentLoaded", () => {
+  if (!document.body.classList.contains("sign-in")) return;
+
+  const emailInput = document.getElementById("emailInput");
+  const passwordInput = document.getElementById("passwordInput");
+  const signInBtn = document.getElementById("signInBtn");
+
+  if (!emailInput || !passwordInput || !signInBtn) return;
+
+  signInBtn.addEventListener("click", () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    if (!email || !password) {
+      alert("Please enter both an email and a password.");
+      return;
+    }
+
+    // OPTIONAL: very basic email format check
+    if (!email.includes("@")) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    // Save sign-in state (simple client-side auth)
+    localStorage.setItem("signedIn", "true");
+    localStorage.setItem("userEmail", email);
+
+    console.log("Sign-in JS active", signInBtn);
+
+    // Redirect
+    window.location.href = "Home.html";
+  });
 });
 
 /* ----------------------------- Utilities ----------------------------- */
