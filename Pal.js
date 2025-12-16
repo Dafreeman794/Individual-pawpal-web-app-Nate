@@ -7,6 +7,7 @@
  ***************************************************************/
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (document.body.classList.contains("pets")) return;
   // Top-level init
   initNotificationSettings();
   initSpecialOverlays();
@@ -16,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCodeInputs();
   initPetTrack();
   initNavbar();
+  initNavbarRandomStats();
   showWelcomeMessage();
 });
 
@@ -463,6 +465,40 @@ function initNavbar() {
 }
 
 
+/* ----------------------------- Navbar behavior (randomized) ----------------------------- */
+function initNavbarRandomStats() {
+  const saved = localStorage.getItem("navbarStats");
+  if (!saved) return;
+
+  const stats = JSON.parse(saved);
+
+  // Feeding times
+  document.querySelectorAll(".feeding-content p").forEach((p, i) => {
+    if (stats.feeding[i]) p.textContent = stats.feeding[i];
+  });
+
+  // Exercise
+  const exercise = document.querySelectorAll(".exercise-content p");
+  if (exercise.length >= 4) {
+    exercise[0].textContent = stats.exercise.miles;
+    exercise[1].textContent = stats.exercise.time1;
+    exercise[2].textContent = stats.exercise.duration;
+    exercise[3].textContent = stats.exercise.time2;
+  }
+
+  // Medication
+  document.querySelectorAll(".medication-times p").forEach((p, i) => {
+    if (stats.medication[i]) p.textContent = stats.medication[i];
+  });
+
+  // Waste
+  document.querySelectorAll(".waste-content .img-time-column p").forEach((p, i) => {
+    if (stats.waste[i]) p.textContent = stats.waste[i];
+  });
+}
+
+
+
 // =========================================
 // ADD NEW PET (SAVE TO LOCALSTORAGE)
 // =========================================
@@ -485,17 +521,13 @@ document.addEventListener("DOMContentLoaded", () => {
     lizard: "Images/lizard.png",
     chicken: "Images/chicken.png",
     "guinea-pig": "Images/guinea.png",
+    falcon: "Images/falcon.png",
+    pidgeon: "Images/pidgeon.png",
     custom: "Images/custom.png" // fallback
   };
 
   createPetBtn.addEventListener("click", (e) => {
-    // prevent accidental form submissions if button inside form
     e.preventDefault();
-
-    if (!petNameInput || !petTypeSelect) {
-      alert("Pet creation inputs are missing on the page.");
-      return;
-    }
 
     const petName = petNameInput.value.trim();
     const petType = petTypeSelect.value;
@@ -505,27 +537,58 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const petImage = petImages[petType] || "Images/default.png";
-    const newPet = { name: petName, type: petType, image: petImage };
+    let petImage;
 
-    // Save as "currentPet" (for Home page quick load)
-    localStorage.setItem("currentPet", JSON.stringify(newPet));
-
-    // Also add to the pets array (collection)
-    let pets = [];
-    try {
-      pets = JSON.parse(localStorage.getItem("pets") || "[]");
-      if (!Array.isArray(pets)) pets = [];
-    } catch (err) {
-      pets = [];
+    if (petType === "custom" && customImageData) {
+        petImage = customImageData; // user's uploaded image
+    } else {
+        petImage = petImages[petType] || "Images/default.png";
     }
 
+    const newPet = { 
+      name: petName, 
+      type: petType, 
+      image: petImage 
+    };
+
+    function randomTime() {
+      const hour = Math.floor(Math.random() * 12) + 1;
+      const minute = Math.random() < 0.5 ? "00" : "30";
+      const period = Math.random() < 0.5 ? "A.M." : "P.M.";
+      return `${hour}:${minute} ${period}`;
+    }
+    
+    function randomMiles() {
+      return `${Math.floor(Math.random() * 5) + 1} Miles`;
+    }
+    
+    function randomHours() {
+      return `${Math.floor(Math.random() * 3) + 1} Hours`;
+    }
+    
+    const navbarStats = {
+      feeding: [randomTime(), randomTime(), randomTime()],
+      exercise: {
+        miles: randomMiles(),
+        time1: randomTime(),
+        duration: randomHours(),
+        time2: randomTime()
+      },
+      medication: [randomTime(), randomTime(), randomTime()],
+      waste: [randomTime(), randomTime(), randomTime()]
+    };
+    
+    // Save ONLY when pet is created
+    localStorage.setItem("navbarStats", JSON.stringify(navbarStats));
+    
+    localStorage.setItem("currentPet", JSON.stringify(newPet));
+
+    let pets = JSON.parse(localStorage.getItem("pets") || "[]");
     pets.push(newPet);
     localStorage.setItem("pets", JSON.stringify(pets));
 
-    // go to home (or to a pet profile later)
     window.location.href = "Home.html";
-  });
+});
 });
 
 
@@ -557,86 +620,118 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    const list = document.getElementById("petList");
-    if (!list) return;
+  const list = document.getElementById("petList");
+  if (!list) return;
 
-    let pets = JSON.parse(localStorage.getItem("pets") || "[]");
+  function loadPets() {
+      list.innerHTML = "";
 
-    pets.forEach((pet, index) => {
-        const li = document.createElement("li");
+      let pets = JSON.parse(localStorage.getItem("pets") || "[]");
 
-        li.innerHTML = `
-            <a href="Home.html" data-index="${index}" class="pet-select">
-                <img src="${pet.image}" alt="${pet.name}">
-                <p class="pet-label">${pet.name}</p>
-            </a>
-        `;
+      pets.forEach((pet, index) => {
+          const li = document.createElement("li");
 
-        list.appendChild(li);
-    });
+          li.innerHTML = `
+              <div class="pet-card">
+                  <a href="Home.html" data-index="${index}" class="pet-select">
+                      <img src="${pet.image}" alt="${pet.name}">
+                      <p class="pet-label">${pet.name}</p>
+                  </a>
+                  <button class="remove-pet-btn" data-index="${index}">Remove</button>
+              </div>
+          `;
 
-    // When user selects a pet → set it as currentPet
-    document.addEventListener("click", (e) => {
-        if (e.target.closest(".pet-select")) {
-            e.preventDefault();
-            const index = e.target.closest(".pet-select").dataset.index;
-            let pets = JSON.parse(localStorage.getItem("pets") || "[]");
-            localStorage.setItem("currentPet", JSON.stringify(pets[index]));
-            window.location.href = "Home.html";
-        }
-    });
+          list.appendChild(li);
+      });
+  }
+
+  // Handle pet selection
+  list.addEventListener("click", (e) => {
+      const petLink = e.target.closest(".pet-select");
+      if (petLink) {
+          e.preventDefault();
+          const index = petLink.dataset.index;
+          const pets = JSON.parse(localStorage.getItem("pets") || "[]");
+          localStorage.setItem("currentPet", JSON.stringify(pets[index]));
+          window.location.href = "Home.html";
+      }
+  });
+
+  // Handle removal (separate, isolated)
+  list.addEventListener("click", (e) => {
+      if (e.target.classList.contains("remove-pet-btn")) {
+          e.stopPropagation();
+
+          const index = Number(e.target.dataset.index);
+          let pets = JSON.parse(localStorage.getItem("pets") || "[]");
+
+          // Remove pet
+          pets.splice(index, 1);
+          localStorage.setItem("pets", JSON.stringify(pets));
+
+          // If removed pet was currentPet, clear it
+          const current = JSON.parse(localStorage.getItem("currentPet") || "null");
+          if (current && current.name === pets[index]?.name) {
+              localStorage.removeItem("currentPet");
+          }
+
+          loadPets();
+      }
+  });
+
+  loadPets();
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    const track = document.getElementById("petList");
 
-    function loadPets() {
-        let pets = JSON.parse(localStorage.getItem("pets") || "[]");
 
-        track.innerHTML = "";
+// // ------------------------
+//         // Attach delete events
+//         document.querySelectorAll(".remove-btn").forEach(btn => {
+//             btn.addEventListener("click", () => {
+//                 removePet(btn.dataset.index);
+//             });
+//         });
+    
 
-        if (pets.length === 0) {
-            track.innerHTML = "<p style='color:white;'>No pets found.</p>";
-            return;
-        }
+//     function removePet(index) {
+//         let pets = JSON.parse(localStorage.getItem("pets") || "[]");
 
-        pets.forEach((pet, index) => {
-            const li = document.createElement("li");
-            li.className = "pet-entry";
+//         // Remove pet by index
+//         pets.splice(index, 1);
 
-            li.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center;">
-                    <img src="${pet.image}" alt="${pet.name}" style="height:150px;">
-                    <div class="pet-label">${pet.name}</div>
-                    <button class="remove-btn" data-index="${index}">Remove</button>
-                </div>
-            `;
+//         // Save updated list
+//         localStorage.setItem("pets", JSON.stringify(pets));
 
-            track.appendChild(li);
-        });
+//         // Refresh UI
+//         loadPets();
+//     }
 
-        // Attach delete events
-        document.querySelectorAll(".remove-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                removePet(btn.dataset.index);
-            });
-        });
+//     loadPets();
+// // ---------------------------
+    
+const select = document.querySelector("select");
+const customInput = document.getElementById("customImageInput");
+const preview = document.getElementById("customPreview");
+
+let customImageData = null; 
+
+select.addEventListener("change", () => {
+    if (select.value === "custom") {
+        customInput.click(); // open file picker
     }
+});
 
-    function removePet(index) {
-        let pets = JSON.parse(localStorage.getItem("pets") || "[]");
+customInput.addEventListener("change", () => {
+    const file = customInput.files[0];
+    if (!file) return;
 
-        // Remove pet by index
-        pets.splice(index, 1);
-
-        // Save updated list
-        localStorage.setItem("pets", JSON.stringify(pets));
-
-        // Refresh UI
-        loadPets();
-    }
-
-    loadPets();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        customImageData = e.target.result; // Base64 image
+        preview.src = customImageData;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
 });
 
 /* ----------------------------- Utilities ----------------------------- */
