@@ -14,26 +14,88 @@
       <h1>Welcome to <br> Wellnesti!</h1>
 
       <label for="email">Email</label>
-      <input type="text" placeholder="Please enter your Email">
+      <input type="text" id="signupEmail" placeholder="Please enter your Email">
     
       <label for="first name">First Name</label>
-      <input type="text" placeholder="Please enter your first name">
+      <input type="text" id="signupFirstName" placeholder="Please enter your first name">
 
       <label for="last name">Last Name</label>
-      <input type="text" placeholder="Please enter your last name">
-
+      <input type="text" id="signupLastName" placeholder="Please enter your last name">
       
       <label for="number">Phone Number</label>
-      <input type="text" placeholder="Please enter a phone number">
+      <input type="text" id="signupPhone" placeholder="Please enter a phone number">
 
       <label for="password">Password</label>
-      <input type="Text" placeholder="Please enter a Password(make it strong)">
+      <input type="Text" id="signupPassword" placeholder="Please enter a Password(make it strong)">
 
       <label for="confirm password">Confirm Password</label>
-      <input type="Text" placeholder="Please confirm your Password">
+      <input type="Text" id="signupConfirmPassword" placeholder="Please confirm your Password">
        
 
+      <button id="signUpBtn">Sign Up</button>
 
-      <button onclick="window.location.href='confirm.html'">Sign Up</button>
+<script>
+  /* ----------------------------- Sign-up Page ----------------------------- */
+document.addEventListener("DOMContentLoaded", () => {
+  if (!document.body.classList.contains("sign-up")) return;
+
+  const email = document.getElementById("signupEmail");
+  const firstName = document.getElementById("signupFirstName");
+  const lastName = document.getElementById("signupLastName");
+  const phone = document.getElementById("signupPhone");
+  const password = document.getElementById("signupPassword");
+  const confirmPassword = document.getElementById("signupConfirmPassword");
+  const signUpBtn = document.getElementById("signUpBtn");
+
+  if (!signUpBtn) return;
+
+  signUpBtn.addEventListener("click", () => {
+    if (
+      !email.value.trim() ||
+      !firstName.value.trim() ||
+      !lastName.value.trim() ||
+      !phone.value.trim() ||
+      !password.value.trim() ||
+      !confirmPassword.value.trim()
+    ) {
+      alert("Please fill out all fields.");
+      return;
+    }
+
+    if (!email.value.includes("@")) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    if (password.value.length < 6) {
+      alert("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (password.value !== confirmPassword.value) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    // Save account (simple localStorage-based auth)
+    const user = {
+      email: email.value.trim(),
+      firstName: firstName.value.trim(),
+      lastName: lastName.value.trim(),
+      phone: phone.value.trim(),
+      password: password.value // NOTE: plaintext for now (fine for class project)
+    };
+
+    localStorage.setItem("userAccount", JSON.stringify(user));
+    localStorage.setItem("signedIn", "true");
+
+    // Go to confirmation page
+    window.location.href = "confirm.html";
+  });
+});
+
+</script>
+      
+      <script src="Pal.js"></script> 
   </body>
 </html>
