@@ -72,6 +72,28 @@
     <img class="waste-img" src="Images/a31a2d5d0dfb5c98ac6abcefba126259d3094311.png">
   <p>6:30 P.M.</p>
   </span>
+  
+  
 </section>
+<div class="activity-list" id="activityList"></div>
+            
+<button id="addActivityBtn" class="add-activity-btn">+ Add Activity</button>
+
+  <form id="addActivityForm" style="display:none; flex-direction: column;">
+    <label>Activity Name</label>
+      <input type="text" id="activityName" placeholder="Walk" required>
+
+    <label>Time</label>
+      <input type="time" id="activityTime" required>
+
+    <label>Date</label>
+       <input type="date" id="activityDate" required>
+
+    <label>Image (optional)</label>
+    <input type="file" id="activityImage" accept="image/*">
+
+    <button type="submit" class="save-activity">Save</button>
+  </form>
 </section>
+<script src="Pal.js"></script>
 </body>

@@ -352,20 +352,48 @@ function initActivityManager() {
     const name = nameInput.value.trim();
     const time = timeInput.value;
     const date = dateInput.value;
-    const image = (imageInput && imageInput.value.trim()) ? imageInput.value.trim() : "images/default.png";
-
+    if (imageInput && imageInput.files && imageInput.files[0]) {
+      const file = imageInput.files[0];
+      const reader = new FileReader();
+    
+      reader.onload = () => {
+        savedActivities.push({
+          name,
+          time,
+          date,
+          image: reader.result // base64 image
+        });
+    
+        localStorage.setItem("activities", JSON.stringify(savedActivities));
+        addActivityForm.reset();
+        addActivityForm.style.display = "none";
+        renderActivities();
+    
+        showNotification(`Activity added: ${name} on ${date} at ${time}`);
+      };
+    
+      reader.readAsDataURL(file);
+    } else {
+      savedActivities.push({
+        name,
+        time,
+        date,
+        image: "images/default.png"
+      });
+    
+      localStorage.setItem("activities", JSON.stringify(savedActivities));
+      addActivityForm.reset();
+      addActivityForm.style.display = "none";
+      renderActivities();
+    
+      showNotification(`Activity added: ${name} on ${date} at ${time}`);
+    }
+    
     if (!name || !time || !date) {
       alert("Please fill in all required fields.");
       return;
     }
 
-    savedActivities.push({ name, time, date, image });
-    localStorage.setItem("activities", JSON.stringify(savedActivities));
-    addActivityForm.reset();
-    addActivityForm.style.display = "none";
-    renderActivities();
-
-    showNotification(`Activity added: ${name} on ${date} at ${time}`);
   });
 
   renderActivities();
