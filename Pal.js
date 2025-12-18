@@ -232,16 +232,45 @@ function initEventManager() {
     const name = nameInput.value.trim();
     const time = timeInput.value;
     const date = dateInput.value;
-    const image = (imageInput && imageInput.value.trim()) ? imageInput.value.trim() : "images/default.png";
+if (imageInput && imageInput.files && imageInput.files[0]) {
+  const file = imageInput.files[0];
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    savedEvents.push({
+      name,
+      time,
+      date,
+      image: reader.result // base64 string
+    });
+
+    localStorage.setItem("events", JSON.stringify(savedEvents));
+    addEventForm.reset();
+    addEventForm.style.display = "none";
+    renderEvents();
+    showNotification(`Event added: ${name} on ${date} at ${time}`);
+  };
+
+  reader.readAsDataURL(file);
+} else {
+  savedEvents.push({
+    name,
+    time,
+    date,
+    image: "images/default.png"
+  });
+
+  localStorage.setItem("events", JSON.stringify(savedEvents));
+  addEventForm.reset();
+  addEventForm.style.display = "none";
+  renderEvents();
+}
+
 
     if (!name || !time || !date) {
       alert("Please fill in all required fields.");
       return;
     }
-
-    savedEvents.push({ name, time, date, image });
-    localStorage.setItem("events", JSON.stringify(savedEvents));
-
     addEventForm.reset();
     addEventForm.style.display = "none";
     renderEvents();

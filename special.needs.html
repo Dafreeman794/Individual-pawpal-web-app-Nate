@@ -36,79 +36,39 @@
                 <section class="events">
                     <p>Events</p>
                     <div id="mobileEventList"></div>
-                        <img src="Images/Vet.png" alt="pill">
+                    <img src="Images/Vet.png" alt="pill">
+                    <div class="event-list" id="eventList">
+                          <div class="event-card">
+                            <img src="images/Vet.png">
+                            <p>Dr. Ewbank<br>checkup</p>
+                            <p>4 PM,<br>October 4th</p>
+                          </div>
+                        </div>
                     </section>
                     <section class="add-new">
-                        <button class="add-event">Add Event</button>
+                        <button class="add-event" id="addEventBtn">Add Event</button>
                     </section>
-     <script src="Pal.js"></script>
-     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const container = document.getElementById("mobileEventList");
-            if (!container) return;
+
+
+
+
+<form id="addEventForm" class="add-event-form" style="display:none;">
+  <label>Event Name</label>
+  <input type="text" id="eventName" placeholder="Vet Visit" required>
+
+  <label>Time</label>
+  <input type="time" id="eventTime" required>
+
+  <label>Date</label>
+  <input type="date" id="eventDate" required>
+
+  <label>Image (optional)</label>
+  <input type="text" id="eventImage" placeholder="images/default.png">
+
+  <button type="submit" class="save-event">Save</button>
+</form>
         
-            let savedEvents = [];
-            try {
-                savedEvents = JSON.parse(localStorage.getItem("events") || "[]");
-                if (!Array.isArray(savedEvents)) savedEvents = [];
-            } catch {
-                savedEvents = [];
-            }
-        
-            if (savedEvents.length === 0) {
-                container.innerHTML = `<p class="empty-note">No events yet.</p>`;
-                return;
-            }
-        
-            savedEvents.forEach(event => {
-                const card = document.createElement("div");
-                card.className = "mobile-event-card";
-        
-                card.innerHTML = `
-                    <img src="${escapeHtml(event.image || 'images/default.png')}" alt="Event">
-                    <p class="event-name">${escapeHtml(event.name)}</p>
-                    <p class="event-date">${formatDate(event.date)}</p>
-                    <p class="event-time">${formatTime(event.time)}</p>
-                `;
-        
-                container.appendChild(card);
-            });
-        });
-        
-        /* --- Safe formatting helpers (same style your main JS uses) --- */
-        function formatDate(dateStr) {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString(undefined, {
-                month: "long",
-                day: "numeric",
-                year: "numeric"
-            });
-        }
-        
-        function formatTime(timeStr) {
-            if (!timeStr) return "";
-            const [hour, minute] = timeStr.split(":");
-            let h = +hour;
-            let suffix = "AM";
-        
-            if (h >= 12) {
-                suffix = "PM";
-                if (h > 12) h -= 12;
-            } else if (h === 0) {
-                h = 12;
-            }
-        
-            return `${h}:${minute} ${suffix}`;
-        }
-        
-        function escapeHtml(str) {
-            return String(str)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;");
-        }
-        </script>
-        
+        <script src="Pal.js"></script>
 </body>
 </html>
                         
